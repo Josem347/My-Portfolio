@@ -1,0 +1,159 @@
+//Movimentação
+right=0;
+left=0;
+jump=0;
+
+direc = 0;
+
+grav = 0.10;
+
+hveloc=0;
+vveloc=0;
+veloc = 1.2;
+
+//Combate
+
+life = 2;
+alpha_hit = 0;
+alarm[0] = 0
+
+estado = Script_Player_movendo;
+
+if oPlayer.life <= 0 {
+	instance_destroy(oPlayer);
+	room_restart();
+}
+
+function Script_Player_movendo (){
+	#region Movimentação Player
+
+	//Movimentos
+
+	right=keyboard_check(ord("D"));
+	left=keyboard_check(ord("A"));
+	jump=keyboard_check_pressed(ord("W"));
+
+	if !place_meeting(x, y + 1, oParede){
+	  vveloc+=grav;
+	} else {
+		if jump{
+		vveloc = -2.9;
+
+		}
+	}
+	hveloc = (right - left) * veloc;
+
+	if place_meeting(x + hveloc,y,oParede) {
+		while !place_meeting(x + sign(hveloc),y,oParede){
+			x+=sign(hveloc);
+	  }
+	    hveloc = 0;
+	}
+
+	x+=hveloc;
+
+	if place_meeting (x, y+vveloc, oParede){
+		while !place_meeting (x,y + sign(vveloc),oParede){
+			y+=sign(vveloc);
+	   }
+	     vveloc=0;
+	}
+
+	y+=vveloc;
+
+	//Movimentos do Sprite
+
+	if right {
+		direc = 0
+		sprite_index = PlayerCorreDir;
+
+	} else if left{
+		direc = 1
+		sprite_index = PlayerCorreEsq;
+	}else{
+		if direc == 0 {
+		sprite_index = PlayerDir;
+		} else if direc ==1 {
+			sprite_index = PlayerEsq;
+		}
+	}
+
+	#endregion
+
+
+if keyboard_check_pressed(vk_space) {
+	image_index = 0;
+	estado = Script_Player_Ataque;	
+	
+	//Lado direito
+	if direc == 0{
+		instance_create_layer(x + 20, y - 8, "instances", oHitbox);
+	}
+	//Lado Equerdo
+	else if direc == 1{
+		instance_create_layer(x - 20, y - 8, "instances", oHitbox);
+	}
+	}
+
+}
+
+function Script_Player_Ataque () {
+	if direc == 0 {
+		sprite_index = PlayerAtacaDir;
+	}else if direc == 1 {
+		sprite_index = PlayerAtacaEsq;
+	}
+	if Script_AnimationEnd(){
+		estado = Script_Player_movendo;
+}
+
+}
+
+
+// Colisão com: oParentEnemy
+
+if other.life > 0{
+	if alarm[0] <= 0 {
+	life-= 1;
+	alarm[0] = 180;
+	}
+
+	if oPlayer.life <= 0 {
+	instance_destroy(oPlayer);
+	room_restart();
+	}
+
+}
+
+
+// Colisão com: oProjetilEnemy
+if alarm[0] <= 0 {
+	life-= 1;
+	alarm[0] = 180;
+}
+
+with(other){
+	instance_destroy();
+}
+
+//Funcionamento do combate 
+script_execute(estado);
+
+// Combate
+if alarm[0] > 0{
+	if image_alpha >=1{
+		alpha_hit = 0.05;
+ }else if image_alpha <= 0{
+	alpha_hit = 0.05;
+ }
+	image_alpha += alpha_hit;
+}else{
+	image_alpha = 1;
+}
+
+ if x > room_width {
+	room_goto_next();
+ }
+
+
+

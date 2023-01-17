@@ -1,0 +1,14 @@
+Objeto de desenhar UI (As vidas na tela)
+
+var _sprl = sprite_get_width(SpriteLife) * 2;
+var _buffer = 20;
+var _lifes = oPlayer.life;
+
+for (var i = 0; i < _lifes; i++;){
+	draw_sprite_ext(SpriteLife, 0, 20 + (_sprl * i) + (_buffer * i), 20, 2, 2, 0, c_white, 1);
+}
+
+Objeto de controle da câmera
+
+x = lerp(x, oPlayer.x, 0.05);
+y = lerp(y, oPlayer.y, 0.05);
